@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Match Center TZ — Angalia Mechi Zote</title>
+<style>
+:root{--bg:#0b0e14;--panel:#151a24;--line:#232a38;--txt:#e8edf5;--mut:#8b96ab;--org:#ff7f00;--red:#f85149;--grn:#238636}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,Arial,sans-serif}
+body{background:var(--bg);color:var(--txt);min-height:100vh}
+header{position:sticky;top:0;z-index:60;background:rgba(11,14,20,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.logo{font-weight:800;font-size:1.2rem}.logo b{color:var(--org)}
+.search{flex:1;min-width:160px}.search input{width:100%;padding:9px 14px;border-radius:20px;border:1px solid var(--line);background:var(--panel);color:var(--txt)}
+.btn{padding:9px 16px;border:none;border-radius:20px;background:var(--org);color:#111;font-weight:700;cursor:pointer}
+.btn2{background:#1f6feb;color:#fff}
+.datebar{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;scrollbar-width:none}
+.dchip{padding:8px 16px;border-radius:20px;background:var(--panel);border:1px solid var(--line);cursor:pointer;white-space:nowrap;font-size:.85rem;color:var(--mut);text-align:center;min-width:74px}
+.dchip.active{background:var(--org);color:#111;font-weight:700;border-color:var(--org)}
+.dchip small{display:block;font-size:.6rem}
+main{padding:6px 16px 90px;max-width:900px;margin:0 auto}
+.league{margin:18px 0 8px;font-size:.85rem;color:var(--mut);text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.match{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:12px;transition:.15s}
+.match:hover{border-color:var(--org)}
+.status{font-size:.65rem;font-weight:800;padding:4px 10px;border-radius:12px;white-space:nowrap;min-width:64px;text-align:center}
+.st-live{background:var(--red);color:#fff;animation:pulse 1.2s infinite}
+.st-soon{background:#9e6a03;color:#fff}.st-ft{background:#30363d;color:var(--mut)}.st-up{background:#1f6feb;color:#fff}
+@keyframes pulse{50%{opacity:.6}}
+.teams{flex:1}
+.team{display:flex;align-items:center;gap:8px;padding:3px 0;font-weight:600}
+.team .logoT{width:26px;height:26px;border-radius:50%;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800;color:#fff}
+.score{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:800;color:var(--org)}
+.time{font-size:.72rem;color:var(--mut);text-align:center;min-width:64px}
+.watch{background:var(--grn);color:#fff;border:none;padding:8px 14px;border-radius:18px;cursor:pointer;font-weight:700;font-size:.8rem;white-space:nowrap}
+.watch:hover{filter:brightness(1.2)}
+.watch:disabled{background:#30363d;color:var(--mut);cursor:not-allowed}
+.form{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0;display:none}
+.form.open{display:block}.form h3{color:var(--org);margin-bottom:8px}
+.form input,.form select{width:100%;padding:9px 12px;margin:5px 0;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--txt)}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.empty{text-align:center;color:var(--mut);padding:40px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--org);color:#111;padding:10px 20px;border-radius:22px;font-weight:700;display:none;z-index:200}
+.note{background:#1c1608;border-left:4px solid var(--org);padding:10px 14px;border-radius:8px;font-size:.8rem;color:#e6d5b8;margin-bottom:14px}
+@media(max-width:560px){.match{flex-wrap:wrap}.time{order:3;width:100%;text-align:left;padding-left:76px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">⚽ Match <b>Center</b> TZ</div>
+  <div class="search"><input id="q" placeholder="Tafuta team... (mf. Simba)"></div>
+  <button class="btn btn2" onclick="toggleForm()">+ Mechi</button>
+</header>
+
+<div class="datebar" id="datebar"></div>
+
+<main>
+  <div class="note">📺 <b>Angalia = halali tu:</b> Weka link ya channel rasmi (FIFA+, YouTube rasmi, broadcaster aliye nunua rights). Hakuna streams zilizovunjiwa hapa.</div>
+
+  <div class="form" id="form">
+    <h3>➕ Ongeza Mechi</h3>
+    <div class="frow">
+      <input id="fHome" placeholder="Team nyumbani (mf. Simba)">
+      <input id="fAway" placeholder="Team ugenini (mf. Yanga)">
+    </div>
+    <div class="frow">
+      <input id="fLeague" placeholder="Ligi (mf. NBC Premier League)">
+      <input id="fColor" placeholder="Rangi (mf. #b02a2a)" value="#1f6feb">
+    </div>
+    <div class="frow">
+      <input id="fTime" type="datetime-local">
+      <select id="fStatus"><option value="up">Ratiba</option><option value="live">Live Sasa</option><option value="ft">Imeisha</option></select>
+    </div>
+    <div class="frow">
+      <input id="fHs" type="number" min="0" placeholder="Mabao nyumbani" style="display:none">
+      <input id="fAs" type="number" min="0" placeholder="Mabao ugenini" style="display:none">
+    </div>
+    <input id="fLink" placeholder="Link ya kuangalia halali (FIFA+, YouTube rasmi...)">
+    <button class="btn" onclick="addMatch()">✅ Hifadhi Mechi</button>
+  </div>
+
+  <div id="list"></div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+/* SAMPLES — badilisha/badilisha kwa mechi halisi */
+const DEF=[
+ {home:"Simba SC",away:"Yanga SC",league:"NBC Premier League",h:1,a:1,time:Date.now()-45*60000,status:"live",link:"",color:"#b02a2a"},
+ {home:"Simba SC",away:"Azam FC",league:"NBC Premier League",h:0,a:0,time:Date.now()+2*3600000,status:"up",link:"https://www.youtube.com/@CAFTV",color:"#1f6feb"},
+ {home:"Taifa Stars",away:"Kenya",league:"Friendly",h:2,a:0,time:Date.now()-3*3600000,status:"ft",link:"",color:"#0b6e4f"},
+ {home:"Real Madrid",away:"Barcelona",league:"La Liga",h:0,a:0,time:Date.now()+26*3600000,status:"up",link:"https://www.fifa.com/fifaplus/",color:"#6e40c9"},
+];
+let data=JSON.parse(localStorage.getItem("mc_data")||"null")||DEF;
+let selDate=new Date();selDate.setHours(0,0,0,0);
+const save=()=>localStorage.setItem("mc_data",JSON.stringify(data));
+
+function renderDates(){
+  let h="";const today=new Date();today.setHours(0,0,0,0);
+  for(let i=-2;i<4;i++){const d=new Date(today.getTime()+i*86400000);
+    const lbl=d.toDateString()===today.toDateString()?"Leo":d.toLocaleDateString("sw",{weekday:"short"});
+    h+=`<div class="dchip ${d.getTime()===selDate.getTime()?'active':''}" onclick="setDate(${d.getTime()})">${d.getDate()}/${d.getMonth()+1}<small>${lbl}</small></div>`;}
+  datebar.innerHTML=h;
+}
+function setDate(t){selDate=new Date(t);renderDates();render();}
+
+function statusOf(m){
+  if(m.status==="ft")return{cls:"st-ft",txt:"FT"};
+  if(m.status==="live")return{cls:"st-live",txt:"● LIVE"};
+  const diff=m.time-Date.now();
+  if(diff<0)return{cls:"st-soon",txt:"ANZA"};
+  if(diff<3600000)return{cls:"st-soon",txt:"Hivi Punde"};
+  return{cls:"st-up",txt:new Date(m.time).toLocaleTimeString("sw",{hour:"2-digit",minute:"2-digit"})};
+}
+
+function render(){
+  const q=document.getElementById("q").value.toLowerCase();
+  const start=selDate.getTime(),end=start+86400000;
+  let list=data.filter(m=>m.time>=start&&m.time<end&&(m.home.toLowerCase().includes(q)||m.away.toLowerCase().includes(q)||m.league.toLowerCase().includes(q)));
+  list.sort((a,b)=>a.time-b.time);
+  if(!list.length){listEl=document.getElementById("list");listEl.innerHTML='<div class="empty">⚽<br>Hakuna mechi siku hii — ongeza kwa "+ Mechi"</div>';return;}
+  let html="",lastLg="";
+  list.forEach(m=>{
+    if(m.league!==lastLg){lastLg=m.league;html+=`<div class="league">🏆 ${m.league}</div>`;}
+    const st=statusOf(m);
+    html+=`<div class="match">
+      <div class="status ${st.cls}">${st.txt}</div>
+      <div class="teams">
+        <div class="team"><div class="logoT" style="background:${m.color}">${m.home[0]}</div>${m.home}${(m.status!=="up")?`<span class="score">${m.h}</span>`:""}</div>
+        <div class="team"><div class="logoT" style="background:#444">${m.away[0]}</div>${m.away}${(m.status!=="up")?`<span class="score">${m.a}</span>`:""}</div>
+      </div>
+      ${m.link?`<button class="watch" onclick="watch('${m.link.replace(/'/g,"\\'")}')">📺 ANGALIA</button>`:(m.status==="up"?`<div class="time">SUBIRI...</div>`:`<div class="time">MECHI ${st.txt}</div>`)}
+    </div>`;
+  });
+  document.getElementById("list").innerHTML=html;
+}
+function watch(url){
+  if(url.includes("streamhub")){window.open(url,"_self");}
+  else window.open(url,"_blank");
+}
+function toggleForm(){document.getElementById("form").classList.toggle("open");}
+function addMatch(){
+  const home=fHome.value.trim(),away=fAway.value.trim(),league=fLeague.value.trim(),link=fLink.value.trim();
+  if(!home||!away||!fTime.value){alert("Jaza team zote na muda!");return;}
+  data.push({home,away,league,h:parseInt(fHs.value)||0,a:parseInt(fAs.value)||0,
+    time:new Date(fTime.value).getTime(),status:fStatus.value,link,color:fColor.value||"#1f6feb"});
+  save();toggleForm();render();toast("✅ Mechi imeongezwa!");
+  fHome.value=fAway.value=fLeague.value=fLink.value=fHs.value=fAs.value="";
+}
+/* live statuses auto-update */
+setInterval(()=>render(),30000);
+document.getElementById("q").addEventListener("input",render);
+function toast(m){const t=document.getElementById("toast");t.textContent=m;t.style.display="block";setTimeout(()=>t.style.display="none",2500);}
+renderDates();render();
+</script>
+</body>
+</html>
